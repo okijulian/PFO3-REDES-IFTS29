@@ -18,41 +18,37 @@ Este repositorio es mi entrega del PFO3. La idea es tomar el trabajo anterior y 
 - Lugares opcionales para guardar datos: PostgreSQL y S3/MinIO.
 
 ```mermaid
-flowchart TD
-    classDef listo fill:#d4f8cc,stroke:#2f6f37,stroke-width:1px,color:#000
-    classDef pendiente fill:#fde2e2,stroke:#8a1f1f,stroke-dasharray:4 2,color:#000
-
+graph TD
     subgraph Clientes
-        CCLI[Cliente CLI<br/>(actual)]:::listo
-        CLWeb[Cliente Web<br/>(pendiente)]:::pendiente
-        CLMob[Cliente Móvil<br/>(pendiente)]:::pendiente
+        C1[Cliente Web]
+        C2[Cliente Móvil]
     end
-
-    LB[Balanceador TCP<br/>Nginx/HAProxy<br/>(pendiente)]:::pendiente
-    ORQ[Servidor orquestador<br/>Python sockets<br/>(actual)]:::listo
-    MQ[(Cola en memoria<br/>queue.Queue<br/>(actual))]:::listo
-    MQReal[(RabbitMQ / Redis<br/>(pendiente))]:::pendiente
-    DB[(PostgreSQL<br/>(pendiente))]:::pendiente
-    S3[(S3 / MinIO<br/>(pendiente))]:::pendiente
-
+    LB[Balanceador TCP<br/>Nginx/HAProxy]
+    ORQ[Servidor Orquestador<br/>Sockets + Cola]
     subgraph Workers
-        W1[Workers en hilos<br/>(actual)]:::listo
-        WN[Workers en otros nodos<br/>(pendiente)]:::pendiente
+        W1[Worker 1<br/>Pool de hilos]
+        W2[Worker 2<br/>Pool de hilos]
+        W3[Worker N<br/>Pool de hilos]
     end
+    MQ[(RabbitMQ<br/>Cola de tareas)]
+    DB[(PostgreSQL<br/>Resultados)]
+    S3[(S3 / MinIO<br/>Artefactos)]
 
-    CCLI --> ORQ
-    CLWeb --> LB
-    CLMob --> LB
+    C1 --> LB
+    C2 --> LB
     LB --> ORQ
     ORQ --> MQ
-    ORQ -.-> MQReal
     MQ --> W1
+    MQ --> W2
+    MQ --> W3
     W1 --> MQ
-    MQ -.-> WN
-    WN -.-> MQReal
+    W2 --> MQ
+    W3 --> MQ
+    MQ --> ORQ
     ORQ --> DB
     ORQ --> S3
 ```
+
 
 ## Paso a paso del flujo
 
