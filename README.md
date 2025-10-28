@@ -18,20 +18,26 @@ Este repositorio es mi entrega del PFO3. La idea es tomar el trabajo anterior y 
 - Lugares opcionales para guardar datos: PostgreSQL y S3/MinIO.
 
 ```mermaid
-graph TD
-    CCLI[Cliente CLI (actual)]
-    CLWeb[Cliente Web (pendiente)]
-    CLMob[Cliente Móvil (pendiente)]
-    LB[Balanceador TCP<br/>Nginx/HAProxy (pendiente)]
-    ORQ[Servidor orquestador<br/>Python sockets (actual)]
-    MQ[(Cola en memoria<br/>queue.Queue (actual))]
-    MQReal[(RabbitMQ / Redis (pendiente))]
-    DB[(PostgreSQL (pendiente))]
-    S3[(S3 / MinIO (pendiente))]
+flowchart TD
+    classDef listo fill:#d4f8cc,stroke:#2f6f37,stroke-width:1px,color:#000
+    classDef pendiente fill:#fde2e2,stroke:#8a1f1f,stroke-dasharray:4 2,color:#000
+
+    subgraph Clientes
+        CCLI[Cliente CLI<br/>(actual)]:::listo
+        CLWeb[Cliente Web<br/>(pendiente)]:::pendiente
+        CLMob[Cliente Móvil<br/>(pendiente)]:::pendiente
+    end
+
+    LB[Balanceador TCP<br/>Nginx/HAProxy<br/>(pendiente)]:::pendiente
+    ORQ[Servidor orquestador<br/>Python sockets<br/>(actual)]:::listo
+    MQ[(Cola en memoria<br/>queue.Queue<br/>(actual))]:::listo
+    MQReal[(RabbitMQ / Redis<br/>(pendiente))]:::pendiente
+    DB[(PostgreSQL<br/>(pendiente))]:::pendiente
+    S3[(S3 / MinIO<br/>(pendiente))]:::pendiente
 
     subgraph Workers
-        W1[Workers en hilos (actual)]
-        WN[Workers en otros nodos (pendiente)]
+        W1[Workers en hilos<br/>(actual)]:::listo
+        WN[Workers en otros nodos<br/>(pendiente)]:::pendiente
     end
 
     CCLI --> ORQ
@@ -46,11 +52,6 @@ graph TD
     WN -.-> MQReal
     ORQ --> DB
     ORQ --> S3
-
-    classDef listo fill:#d4f8cc,stroke:#2f6f37,stroke-width:1px,color:#000;
-    classDef pendiente fill:#fde2e2,stroke:#8a1f1f,stroke-dasharray:4 2,color:#000;
-    class CCLI,ORQ,MQ,W1 listo;
-    class CLWeb,CLMob,LB,MQReal,WN,DB,S3 pendiente;
 ```
 
 ## Paso a paso del flujo
