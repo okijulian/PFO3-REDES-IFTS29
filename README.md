@@ -18,26 +18,26 @@ Este repositorio es mi entrega del PFO3. La idea es tomar el trabajo anterior y 
 - Lugares opcionales para guardar datos: PostgreSQL y S3/MinIO.
 
 ```mermaid
-flowchart TD
+graph TD
     classDef listo fill:#d4f8cc,stroke:#2f6f37,stroke-width:1px,color:#000
     classDef pendiente fill:#fde2e2,stroke:#8a1f1f,stroke-dasharray:4 2,color:#000
 
     subgraph Clientes
-        CCLI["Cliente CLI (actual)"]:::listo
-        CLWeb["Cliente Web (pendiente)"]:::pendiente
-        CLMob["Cliente Móvil (pendiente)"]:::pendiente
+        CCLI["Cliente CLI<br/>(actual)"]:::listo
+        CLWeb["Cliente Web<br/>(pendiente)"]:::pendiente
+        CLMob["Cliente Móvil<br/>(pendiente)"]:::pendiente
     end
 
-    LB["Balanceador TCP Nginx/HAProxy (pendiente)"]:::pendiente
-    ORQ["Servidor orquestador Python sockets (actual)"]:::listo
-    MQ["Cola en memoria queue.Queue (actual)"]:::listo
-    MQReal["RabbitMQ / Redis (pendiente)"]:::pendiente
-    DB["PostgreSQL (pendiente)"]:::pendiente
-    S3["S3 / MinIO (pendiente)"]:::pendiente
+    LB["Balanceador TCP<br/>Nginx/HAProxy<br/>(pendiente)"]:::pendiente
+    ORQ["Servidor orquestador<br/>Python sockets<br/>(actual)"]:::listo
+    MQ[("Cola en memoria<br/>queue.Queue<br/>(actual)")]:::listo
+    MQReal[("RabbitMQ / Redis<br/>(pendiente)")]:::pendiente
+    DB[("PostgreSQL<br/>(pendiente)")]:::pendiente
+    S3[("S3 / MinIO<br/>(pendiente)")]:::pendiente
 
     subgraph Workers
-        W1["Workers en hilos (actual)"]:::listo
-        WN["Workers en otros nodos (pendiente)"]:::pendiente
+        W1["Workers en hilos<br/>(actual)"]:::listo
+        WN["Workers en otros nodos<br/>(pendiente)"]:::pendiente
     end
 
     CCLI --> ORQ
