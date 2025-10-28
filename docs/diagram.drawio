@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" modified="2024-08-08T00:00:00Z" agent="draw.io 24.4.0" version="24.4.0" type="device">
+  <diagram name="PFO3 Arquitectura" id="rjYH6ztZ3Dk9JF-Ukp7f">
+    <mxGraphModel dx="1280" dy="720" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="clientes" value="Clientes" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#f7f9fc;strokeColor=#1a73e8;fontColor=#1a73e8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="160" width="160" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="clienteWeb" value="Cliente Web" style="rounded=1;strokeColor=#1a73e8;fillColor=#ffffff;fontColor=#1a73e8;" vertex="1" parent="clientes">
+          <mxGeometry x="20" y="30" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="clienteMovil" value="Cliente Móvil" style="rounded=1;strokeColor=#1a73e8;fillColor=#ffffff;fontColor=#1a73e8;" vertex="1" parent="clientes">
+          <mxGeometry x="20" y="110" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="balanceador" value="Balanceador TCP&#10;Nginx / HAProxy" style="rounded=1;strokeColor=#3367d6;fillColor=#d7e3ff;fontColor=#0b5394;" vertex="1" parent="1">
+          <mxGeometry x="280" y="220" width="170" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="servidor" value="Servidor Orquestador&#10;Sockets + Cola" style="rounded=1;strokeColor=#3367d6;fillColor=#d7e3ff;fontColor=#0b5394;" vertex="1" parent="1">
+          <mxGeometry x="520" y="220" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="rabbitmq" value="Cola de Mensajes&#10;RabbitMQ" style="shape=process;rounded=1;strokeColor=#ea4335;fillColor=#fde7e2;fontColor=#a52714;" vertex="1" parent="1">
+          <mxGeometry x="780" y="220" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="workersGroup" value="Workers (Pool de hilos)" style="swimlane;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#f7f9fc;strokeColor=#34a853;fontColor=#0b8043;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="150" width="200" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="worker1" value="Worker 1" style="rounded=1;strokeColor=#34a853;fillColor=#ffffff;fontColor=#0b8043;" vertex="1" parent="workersGroup">
+          <mxGeometry x="20" y="30" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="worker2" value="Worker 2" style="rounded=1;strokeColor=#34a853;fillColor=#ffffff;fontColor=#0b8043;" vertex="1" parent="workersGroup">
+          <mxGeometry x="20" y="110" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="workerN" value="Worker N" style="rounded=1;strokeColor=#34a853;fillColor=#ffffff;fontColor=#0b8043;" vertex="1" parent="workersGroup">
+          <mxGeometry x="20" y="190" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="postgres" value="Resultados&#10;PostgreSQL" style="shape=partialRectangle;rounded=1;strokeColor=#fbbc04;fillColor=#fff4de;fontColor=#a66300;flipV=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="360" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="Artefactos&#10;S3 / MinIO" style="shape=cylinder;rounded=1;strokeColor=#fbbc04;fillColor=#fff4de;fontColor=#a66300;" vertex="1" parent="1">
+          <mxGeometry x="760" y="360" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeClientesBalanceador" style="edgeStyle=orthogonalEdgeStyle;endArrow=classic;strokeColor=#1a73e8;" edge="1" parent="1" source="clienteWeb" target="balanceador">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeClienteMovilBalanceador" style="edgeStyle=orthogonalEdgeStyle;endArrow=classic;strokeColor=#1a73e8;" edge="1" parent="1" source="clienteMovil" target="balanceador">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeBalanceadorServidor" style="edgeStyle=orthogonalEdgeStyle;endArrow=classic;strokeColor=#3367d6;" edge="1" parent="1" source="balanceador" target="servidor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeServidorRabbit" style="edgeStyle=orthogonalEdgeStyle;endArrow=classic;strokeColor=#ea4335;" edge="1" parent="1" source="servidor" target="rabbitmq">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeRabbitServidor" style="edgeStyle=orthogonalEdgeStyle;endArrow=classic;strokeColor=#ea4335;" edge="1" parent="1" source="rabbitmq" target="servidor">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="720" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edgeRabbitWorkers" style="edgeStyle=orthogonalEdgeStyle;endArrow=classic;strokeColor=#34a853;" edge="1" parent="1" source="rabbitmq" target="workersGroup">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeWorkersRabbit" style="edgeStyle=orthogonalEdgeStyle;endArrow=classic;strokeColor=#34a853;" edge="1" parent="1" source="workersGroup" target="rabbitmq">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeServidorPostgres" style="edgeStyle=orthogonalEdgeStyle;endArrow=classic;strokeColor=#fbbc04;" edge="1" parent="1" source="servidor" target="postgres">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeServidorS3" style="edgeStyle=orthogonalEdgeStyle;endArrow=classic;strokeColor=#fbbc04;" edge="1" parent="1" source="servidor" target="s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
