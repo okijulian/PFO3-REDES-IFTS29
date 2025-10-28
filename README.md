@@ -18,35 +18,42 @@ Este repositorio es mi entrega del PFO3. La idea es tomar el trabajo anterior y 
 - Lugares opcionales para guardar datos: PostgreSQL y S3/MinIO.
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph Clientes
-        C1[Cliente Web]
-        C2[Cliente Móvil]
+        CCLI[Cliente CLI<br/>(actual)]
+        CLWeb[Cliente Web<br/>(pendiente)]
+        CLMob[Cliente Móvil<br/>(pendiente)]
     end
-    LB[Balanceador TCP<br/>Nginx/HAProxy]
-    ORQ[Servidor Orquestador<br/>Sockets + Cola]
-    subgraph Workers
-        W1[Worker 1<br/>Pool de hilos]
-        W2[Worker 2<br/>Pool de hilos]
-        W3[Worker N<br/>Pool de hilos]
-    end
-    MQ[(RabbitMQ<br/>Cola de tareas)]
-    DB[(PostgreSQL<br/>Resultados)]
-    S3[(S3 / MinIO<br/>Artefactos)]
 
-    C1 --> LB
-    C2 --> LB
+    LB[Balanceador TCP<br/>Nginx/HAProxy<br/>(pendiente)]
+    ORQ[Servidor orquestador<br/>Python sockets<br/>(actual)]
+    MQ[(Cola en memoria<br/>queue.Queue<br/>(actual))]
+    MQReal[(RabbitMQ / Redis<br/>(pendiente))]
+    DB[(PostgreSQL<br/>(pendiente))]
+    S3[(S3 / MinIO<br/>(pendiente))]
+
+    subgraph Workers
+        W1[Workers en hilos<br/>(actual)]
+        WN[Workers en otros nodos<br/>(pendiente)]
+    end
+
+    CCLI --> ORQ
+    CLWeb --> LB
+    CLMob --> LB
     LB --> ORQ
     ORQ --> MQ
+    ORQ -.-> MQReal
     MQ --> W1
-    MQ --> W2
-    MQ --> W3
     W1 --> MQ
-    W2 --> MQ
-    W3 --> MQ
-    MQ --> ORQ
+    MQ -.-> WN
+    WN -.-> MQReal
     ORQ --> DB
     ORQ --> S3
+
+    classDef listo fill:#d4f8cc,stroke:#2f6f37,stroke-width:1px,color:#000;
+    classDef pendiente fill:#fde2e2,stroke:#8a1f1f,stroke-dasharray:4 2,color:#000;
+    class CCLI,ORQ,MQ,W1 listo;
+    class CLWeb,CLMob,LB,MQReal,WN,DB,S3 pendiente;
 ```
 
 
