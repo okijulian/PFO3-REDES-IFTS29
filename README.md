@@ -19,19 +19,20 @@ Este repositorio es mi entrega del PFO3. La idea es tomar el trabajo anterior y 
 
 ```mermaid
 graph TD
-    CCLI[Cliente CLI (actual)]:::listo
-    CLWeb[Cliente Web (a futuro)]:::pendiente
-    CLMob[Cliente Móvil (a futuro)]:::pendiente
-    LB[Balanceador TCP<br/>Nginx/HAProxy]:::pendiente
-    ORQ[Servidor orquestador<br/>Python sockets]:::listo
-    MQ[(Cola en memoria<br/>queue.Queue)]:::listo
-    MQReal[(RabbitMQ / Redis<br/>(pendiente))]:::pendiente
+    CCLI[Cliente CLI (actual)]
+    CLWeb[Cliente Web (pendiente)]
+    CLMob[Cliente Móvil (pendiente)]
+    LB[Balanceador TCP<br/>Nginx/HAProxy (pendiente)]
+    ORQ[Servidor orquestador<br/>Python sockets (actual)]
+    MQ[(Cola en memoria<br/>queue.Queue (actual))]
+    MQReal[(RabbitMQ / Redis (pendiente))]
+    DB[(PostgreSQL (pendiente))]
+    S3[(S3 / MinIO (pendiente))]
+
     subgraph Workers
-        W1[Workers en hilos<br/>(actual)]:::listo
-        WN[Workers en otros nodos<br/>(pendiente)]:::pendiente
+        W1[Workers en hilos (actual)]
+        WN[Workers en otros nodos (pendiente)]
     end
-    DB[(PostgreSQL<br/>(pendiente))]:::pendiente
-    S3[(S3 / MinIO<br/>(pendiente))]:::pendiente
 
     CCLI --> ORQ
     CLWeb --> LB
@@ -46,8 +47,10 @@ graph TD
     ORQ --> DB
     ORQ --> S3
 
-    classDef listo fill:#d4f8cc,stroke:#2f6f37,stroke-width:1px;
-    classDef pendiente fill:#fde2e2,stroke:#8a1f1f,stroke-dasharray:4 2;
+    classDef listo fill:#d4f8cc,stroke:#2f6f37,stroke-width:1px,color:#000;
+    classDef pendiente fill:#fde2e2,stroke:#8a1f1f,stroke-dasharray:4 2,color:#000;
+    class CCLI,ORQ,MQ,W1 listo;
+    class CLWeb,CLMob,LB,MQReal,WN,DB,S3 pendiente;
 ```
 
 ## Paso a paso del flujo
