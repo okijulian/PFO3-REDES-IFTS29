@@ -1,75 +1,94 @@
-# PFO3 · Rediseño como Sistema Distribuido (Cliente-Servidor)
+# PFO3 · Sistema distribuido simple (cliente-servidor)
 
-Este prototipo implementa la consigna del PFO3 para **Programación sobre Redes**: transformar el sistema en una arquitectura distribuida basada en sockets, con separación entre clientes, balanceo, cola de mensajes, workers y almacenamiento.
+Este repositorio es mi entrega del PFO3. La idea es tomar el trabajo anterior y separarlo en cliente, servidor y pequeños workers usando sockets.
 
-## Arquitectura propuesta
+## Qué hay acá
 
-- **Clientes (web/móvil):** envían tareas a través de sockets TCP usando un protocolo JSON sencillo.
-- **Balanceador de carga (Nginx/HAProxy):** distribuye conexiones entrantes entre múltiples instancias del servidor de orquestación. En desarrollo se usa una sola instancia, pero la configuración admite escalar horizontalmente.
-- **Servidor orquestador:** recibe tareas, valida el contenido y las coloca en una cola de mensajes segura (simulada con `queue.Queue`, intercambiable por RabbitMQ/Kombu). Mantiene un pool de workers para procesar las tareas concurrentemente.
-- **Workers:** cada worker se ejecuta en su propio hilo, obtiene tareas desde la cola, las procesa y retorna resultados al cliente mediante una `reply_queue`.
-- **Cola de mensajes (RabbitMQ):** el prototipo usa una implementación en memoria, pero el flujo es compatible con usar RabbitMQ (o Redis Streams) para desacoplar el orquestador y los workers.
-- **Almacenamiento distribuido:** los resultados podrían persistirse en PostgreSQL y archivos en S3; en este prototipo se deja preparado el punto de extensión en `procesar_tarea`.
+- `src/servidor.py`: servidor que escucha por TCP, reparte tareas a un pool de hilos y responde al cliente.  
+- `src/cliente.py`: programa para mandar tareas y ver la respuesta. Permite modo menú o argumentos por consola.  
+- `docs/diagram.drawio`: archivo editable del diagrama.  
+- `docs/diagram.md`: versión con Mermaid que se ve acá debajo.
 
-Consulta el archivo [`docs/diagram.md`](docs/diagram.md) para un diagrama de alto nivel (formato Mermaid) y una descripción narrativa del flujo.  
-Si prefieres editarlo en diagrams.net/draw.io, está disponible la versión editable en [`docs/diagram.drawio`](docs/diagram.drawio).
+## Componentes principales
 
-## Requisitos
+- Clientes web o móviles que hablan por TCP (en local usamos `python src/cliente.py`).
+- Un balanceador (Nginx/HAProxy) pensado para futuro; en pruebas se apunta directo al servidor.
+- Servidor orquestador con una cola (`queue.Queue`) y varios workers en hilos.
+- Workers que procesan la tarea y devuelven el resultado.
+- Lugares opcionales para guardar datos: PostgreSQL y S3/MinIO.
 
-- Python 3.9 o superior (solo se utilizan módulos estándar).
+```mermaid
+graph TD
+    CCLI[Cliente CLI (actual)]:::listo
+    CLWeb[Cliente Web (a futuro)]:::pendiente
+    CLMob[Cliente Móvil (a futuro)]:::pendiente
+    LB[Balanceador TCP<br/>Nginx/HAProxy]:::pendiente
+    ORQ[Servidor orquestador<br/>Python sockets]:::listo
+    MQ[(Cola en memoria<br/>queue.Queue)]:::listo
+    MQReal[(RabbitMQ / Redis<br/>(pendiente))]:::pendiente
+    subgraph Workers
+        W1[Workers en hilos<br/>(actual)]:::listo
+        WN[Workers en otros nodos<br/>(pendiente)]:::pendiente
+    end
+    DB[(PostgreSQL<br/>(pendiente))]:::pendiente
+    S3[(S3 / MinIO<br/>(pendiente))]:::pendiente
 
-## Uso
+    CCLI --> ORQ
+    CLWeb --> LB
+    CLMob --> LB
+    LB --> ORQ
+    ORQ --> MQ
+    ORQ -.-> MQReal
+    MQ --> W1
+    W1 --> MQ
+    MQ -.-> WN
+    WN -.-> MQReal
+    ORQ --> DB
+    ORQ --> S3
 
-1. Arrancar el servidor:
+    classDef listo fill:#d4f8cc,stroke:#2f6f37,stroke-width:1px;
+    classDef pendiente fill:#fde2e2,stroke:#8a1f1f,stroke-dasharray:4 2;
+```
+
+## Paso a paso del flujo
+
+1. El cliente arma un JSON simple y lo envía al servidor usando sockets.
+2. El servidor mete la tarea en la cola y algún worker libre la toma.
+3. El worker procesa (mayúsculas, invertir texto, contar palabras o `sleep`) y deja el resultado en una cola de respuesta.
+4. El servidor lee la respuesta y se la manda al cliente.
+
+En este prototipo todo vive en memoria para que sea fácil de probar, pero la estructura queda lista para cambiar la cola por RabbitMQ y persistir resultados.
+
+`Verde = ya implementado`. `Rojo = pendiente por construir`.
+
+## Cómo ejecutar
+
+1. Requisito único: Python 3.9+ (usa solo la librería estándar).
+2. En una terminal levantar el servidor:
 
    ```bash
-   python3 src/server.py
+   python3 src/servidor.py
    ```
 
-2. Enviar una tarea desde el cliente. Puedes pasar los parámetros por línea de comandos o dejar que el programa te guíe de forma interactiva (el menú se muestra en el cliente):
+3. En otra terminal enviar una tarea:
 
    ```bash
-   # Ejemplo con argumentos
-   python3 src/client.py --tipo uppercase --contenido "hola mundo"
-
-   # Ejemplo interactivo (solo ejecuta el cliente y sigue el menú)
-   python3 src/client.py
+   python3 src/cliente.py --tipo uppercase --contenido "hola mundo"
    ```
 
-   Respuesta de ejemplo:
+   Si preferís menú interactivo, corré `python3 src/cliente.py` sin parámetros.
 
-   ```json
-   {
-     "servidor": "127.0.0.1",
-     "puerto": 9000,
-     "solicitud": {
-       "tarea_id": "4cbc8d09-aee0-48c1-96ef-3ccf2e6a2d28",
-       "tipo": "uppercase",
-       "contenido": "hola mundo"
-     },
-     "respuesta": {
-       "estado": "ok",
-       "resultado": "HOLA MUNDO",
-       "tarea_id": "4cbc8d09-aee0-48c1-96ef-3ccf2e6a2d28",
-       "worker": 2
-     }
-   }
-   ```
+## Tareas que entiende el servidor
 
-## Tipos de tareas soportadas
+| Código | Clave        | Qué hace                           |
+|--------|--------------|------------------------------------|
+| `1`    | `uppercase`  | Devuelve el texto en mayúsculas.   |
+| `2`    | `reverse`    | Invierte la cadena.                |
+| `3`    | `word_count` | Cuenta palabras separadas por espacios. |
+| `4`    | `sleep`      | Duerme la cantidad de segundos indicada. |
 
-| Código | Tipo         | Descripción                                          | Alias aceptados                      |
-|--------|--------------|------------------------------------------------------|--------------------------------------|
-| `1`    | `uppercase`  | Convierte texto a mayúsculas.                        | `uppercase`, `mayus`, `upper`        |
-| `2`    | `reverse`    | Invierte la cadena recibida.                         | `reverse`, `invertir`, `reversa`     |
-| `3`    | `word_count` | Cuenta palabras separadas por espacios.              | `word_count`, `contar`, `palabras`   |
-| `4`    | `sleep`      | Simula un trabajo pesado esperando N segundos.       | `sleep`, `espera`, `delay`           |
+Podés agregar nuevas tareas editando `procesar_tarea` en `src/servidor.py`.
 
-Para agregar nuevas tareas basta con extender la función `procesar_tarea` en `src/server.py`.
+## Nota sobre el diagrama
 
-## Escalamiento y mejoras sugeridas
-
-1. **Balanceo real:** frente a múltiples instancias del servidor, configurar Nginx/HAProxy en modo TCP con health-checks.
-2. **Cola externa:** reemplazar la cola en memoria por RabbitMQ usando `pika` o `kombu`, lo que permitiría distribuir workers en nodos distintos.
-3. **Persistencia:** registrar los resultados de cada tarea (ej. en PostgreSQL) y publicar archivos a S3 cuando el contenido lo amerite.
-4. **Seguridad:** agregar autenticación JWT y TLS a los sockets para productivo, reutilizando los componentes del PFO2.
+Si necesitás modificarlo en diagrams.net/draw.io, abrí `docs/diagram.drawio`. 
