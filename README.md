@@ -19,22 +19,25 @@ Este repositorio es mi entrega del PFO3. La idea es tomar el trabajo anterior y 
 
 ```mermaid
 flowchart TD
+    classDef listo fill:#d4f8cc,stroke:#2f6f37,stroke-width:1px,color:#000
+    classDef pendiente fill:#fde2e2,stroke:#8a1f1f,stroke-dasharray:4 2,color:#000
+
     subgraph Clientes
-        CCLI[Cliente CLI<br/>(actual)]
-        CLWeb[Cliente Web<br/>(pendiente)]
-        CLMob[Cliente Móvil<br/>(pendiente)]
+        CCLI["Cliente CLI (actual)"]:::listo
+        CLWeb["Cliente Web (pendiente)"]:::pendiente
+        CLMob["Cliente Móvil (pendiente)"]:::pendiente
     end
 
-    LB[Balanceador TCP<br/>Nginx/HAProxy<br/>(pendiente)]
-    ORQ[Servidor orquestador<br/>Python sockets<br/>(actual)]
-    MQ[(Cola en memoria<br/>queue.Queue<br/>(actual))]
-    MQReal[(RabbitMQ / Redis<br/>(pendiente))]
-    DB[(PostgreSQL<br/>(pendiente))]
-    S3[(S3 / MinIO<br/>(pendiente))]
+    LB["Balanceador TCP Nginx/HAProxy (pendiente)"]:::pendiente
+    ORQ["Servidor orquestador Python sockets (actual)"]:::listo
+    MQ["Cola en memoria queue.Queue (actual)"]:::listo
+    MQReal["RabbitMQ / Redis (pendiente)"]:::pendiente
+    DB["PostgreSQL (pendiente)"]:::pendiente
+    S3["S3 / MinIO (pendiente)"]:::pendiente
 
     subgraph Workers
-        W1[Workers en hilos<br/>(actual)]
-        WN[Workers en otros nodos<br/>(pendiente)]
+        W1["Workers en hilos (actual)"]:::listo
+        WN["Workers en otros nodos (pendiente)"]:::pendiente
     end
 
     CCLI --> ORQ
@@ -49,11 +52,6 @@ flowchart TD
     WN -.-> MQReal
     ORQ --> DB
     ORQ --> S3
-
-    classDef listo fill:#d4f8cc,stroke:#2f6f37,stroke-width:1px,color:#000;
-    classDef pendiente fill:#fde2e2,stroke:#8a1f1f,stroke-dasharray:4 2,color:#000;
-    class CCLI,ORQ,MQ,W1 listo;
-    class CLWeb,CLMob,LB,MQReal,WN,DB,S3 pendiente;
 ```
 
 
@@ -95,7 +93,3 @@ En este prototipo todo vive en memoria para que sea fácil de probar, pero la es
 | `4`    | `sleep`      | Duerme la cantidad de segundos indicada. |
 
 Podés agregar nuevas tareas editando `procesar_tarea` en `src/servidor.py`.
-
-## Nota sobre el diagrama
-
-Si necesitás modificarlo en diagrams.net/draw.io, abrí `docs/diagram.drawio`. 
